@@ -60,14 +60,25 @@ def expose(url_pattern, method='GET', content_type='text/html', charset='UTF-8')
             params(env, method)
             resp    = func(env)
 
-            if type(resp) == tuple:
-                status  = resp[0]
-                heads   = resp[2]
-                resp    = resp[1]
-                for h in heads.keys():
-                    headers.append((h,heads[h]))
-
-            start_response(status_map[status], headers)
+            if type(resp) == int:
+                status = resp
+                resp   = status_map.has_key(status) and status_map[status] or ''
+            elif type(resp) == tuple:
+                if len(resp) > 2:
+                    heads = resp[2]
+                    for h in heads.keys():
+                        headers.append((h,heads[h]))
+                if len(resp) < 2:
+                    status = 500
+                    resp   = 'CENTIPEDE ERROR: Returning a tuple requires minimum two values'
+                else:
+                    status = resp[0]
+                    resp   = resp[1]
+            elif type(resp) not in [str,unicode]:
+                status = 500
+                resp   = 'CENTIPEDE ERROR: Unsupported return value %s. Use str, unicode, int or tuple.' % type(resp)
+                
+            start_response(status_map.has_key(status) and status_map[status] or '%s' % status, headers)
             return [resp]
     return entangle
 
@@ -90,20 +101,27 @@ param_keys = {
 }
 
 def params(env, method):
-
+    """ Parse the parameters
+    """
     for param in param_keys.values():
         env[param['centipede_key']] = {}
-        env['%s_raw' % param['centipede_key']] = {}
+        env['%s_noquote' % param['centipede_key']] = {}
+        env['%s_raw' % param['centipede_key']] = ''
         try:
             data = env[param['wsgi_env_key']]
             if param['need_read']:
                 data = data.read()
             if data != None and data != '':
-                for keyval in data.split('&'):
-                    k,v = keyval.split('=')
-                    uq  = param['unquote_method']
-                    env[param['centipede_key']][uq(k)] = uq(v)
-                    env['%s_raw' % param['centipede_key']][k] = v
+                env['%s_raw' % param['centipede_key']] = data
+                if len(data) > 100000:
+                    env[param['centipede_key']] = 'Big chunk of data received. Only raw data available.'
+                    env['%s_noquote' % param['centipede_key']] = 'Big chunk of data received. Only raw data available.'
+                else:
+                    for keyval in data.split('&'):
+                        k,v = keyval.split('=')
+                        uq  = param['unquote_method']
+                        env[param['centipede_key']][uq(k)] = uq(v)
+                        env['%s_noquote' % param['centipede_key']][k] = v
         except:
             print "Unable to parse %s data." % param['wsig_env_key']
 

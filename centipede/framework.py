@@ -27,6 +27,8 @@ from urlrelay import url, URLRelay
 from static import Cling
 from urllib import unquote, unquote_plus
 
+import traceback
+
 status_map = {
     200: "200 OK",
     301: "301 Moved Permanently",
@@ -116,14 +118,17 @@ def params(env, method):
                 if len(data) > 100000:
                     env[param['centipede_key']] = 'Big chunk of data received. Only raw data available.'
                     env['%s_noquote' % param['centipede_key']] = 'Big chunk of data received. Only raw data available.'
-                else:
+                elif data.find('&') >= 0:
                     for keyval in data.split('&'):
                         k,v = keyval.split('=')
                         uq  = param['unquote_method']
                         env[param['centipede_key']][uq(k)] = uq(v)
                         env['%s_noquote' % param['centipede_key']][k] = v
-        except:
-            print "Unable to parse %s data." % param['wsig_env_key']
+        except Exception, e:
+#            traceback.print_stack()
+            print "Unable to parse %s data." % param['wsgi_env_key']
+            print e
+
 
 
 ## Make the application

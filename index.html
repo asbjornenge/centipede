@@ -1,1 +1,112 @@
-Centipede github page
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <title>Centipede</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+        <link rel="stylesheet" type="text/css" href="css/centipede.css" >
+		<link rel="stylesheet" type="text/css" href="js/google-code-prettify/prettify.css" />
+		<link href='http://fonts.googleapis.com/css?family=Fanwood+Text:400,400italic|Reenie+Beanie|Lobster+Two:400,700italic' rel='stylesheet' type='text/css'>
+		
+        <script type="text/javascript" src="js/jquery.js"></script>
+		<script type="text/javascript" src="js/centipede.js"></script>
+		<script type="text/javascript" src="js/google-code-prettify/prettify.js"></script>
+    </head>
+
+    <body>
+		<div id="flattr">
+			<a href="http://flattr.com/thing/461501/Centipede" target="_blank">
+			<img src="http://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" border="0" /></a>
+		</div>
+        <div id="wrapper">
+			&nbsp;
+			<img src="img/Centipede_logo_261.png">
+			<div class="title">
+				<h1>Centipede</h1>
+				<h3 style="margin-top: -17px">Tapdancing</h3>
+				<h3>wsgi feet</h3>
+			</div>
+			<p>
+				Centipede is a collection of WSGI middleware with a simple decorator based router. 
+			    It's strength is that it models the technology in use and tries not to confuse developers with 
+			    complex patterns and tricks. It is what I use to stack my rest services these days.
+			</p>
+			<h2>Prerequisites</h2>
+			<ul>
+				<li><a href="http://python.org">python</a></li>
+				<li><a href="http://mercurial.selenic.com">mercurial</a></li>
+				<li><a href="http://www.pip-installer.org">pip</a></li>
+				<li><a href="http://pypi.python.org/pypi/virtualenv">virtualenv</a></li>
+			</ul>
+			<h2>Installing</h2>
+			<div class="highlight">
+				<code class="prettyprint lang-bsh">
+					<div>$ hg clone https://bitbucket.org/asbjornenge/centipede projectname</div>
+					<div>$ virtualenv --no-site-packages .</div>
+					<div>$ source bin/activate</div>
+					<div>$ pip install -r req.txt</div>
+					<div>$ ./run 0.0.0.0:8580</div>
+				</code>
+			</div>
+			<h2>Defining handlers</h2>
+			<div class="highlight">
+				<code class="prettyprint">
+					<div>from framework import expose</div>
+					<div>&nbsp;</div>
+					<div>@expose('^/$','GET', content_type='text/plain')</div>
+					<div>def index(request, response):</div>
+					<div>&nbsp;&nbsp;&nbsp;&nbsp;""" Return index.html</div>
+					<div>&nbsp;&nbsp;&nbsp;&nbsp;"""</div>
+					<div>&nbsp;&nbsp;&nbsp;&nbsp;return 'IgglePigglePartyPants'</div>
+				</code>
+				<div>&nbsp;</div>
+				<code class="prettyprint">
+					<div>import json</div>
+					<div>&nbsp;</div>
+					<div>@expose('^/twitter$','GET', content_type='application/json')</div>
+					<div>def twitter(request, response):</div>
+					<div>&nbsp;&nbsp;&nbsp;&nbsp;""" Return your twitter status</div>
+					<div>&nbsp;&nbsp;&nbsp;&nbsp;"""</div>
+					<div>&nbsp;&nbsp;&nbsp;&nbsp;return json.dumps({</div>
+					<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'status' : 'My awesome and insightful twitter status. #blah'</div>
+					<div>&nbsp;&nbsp;&nbsp;&nbsp;})</div>
+				</code>
+			</div>
+			<h2>Templates</h2>
+			<p>
+				I would recommend keeping your html templates static on the client side and use a javascript template library.
+				But if you really need some server side templating, have a look at <a href="http://www.makotemplates.org/">mako</a>.
+			</p>
+			<h2>Deployment</h2>
+			<p>
+				For deployment it is not a good idea to use the <i>wsgiref simple_server</i> that the run script uses.
+				A much better idea is to run your centipede application behind a WSGI server. There is a 
+				<a href="http://www.wsgi.org/en/latest/servers.html">bunch</a>. I recommend running 
+				<a href="http://projects.unbit.it/uwsgi/wiki/RunOnNginx">uwsgi</a> behind <a href="http://wiki.nginx.org/">nginx</a>
+				if you are deploying on your own server. Or have a look at <a href="http://heroku.com">heroku</a>.
+			</p>
+			<h3>Heroku</h3>
+			<p>
+				Deploying centipede applications on heroku is dead simple. Just add this to your <i>Procfile</i>.
+			</p>
+			<div class="highlight">
+				<code class="prettyprint">
+					<div>web: uwsgi -w uwsgi_app -H . --http-socket 0.0.0.0:$PORT</div>
+				</code>
+			</div>
+			<h3>uwsgi</h3>
+			<p>
+				For deployment using uwsgi, we've supplied a <i>uwsgi_app.py</i> module and a <i>uwsgi_init</i> script. Modify to fit your 
+				<a href="http://projects.unbit.it/uwsgi/wiki/VirtualEnv">needs</a> ;-).
+			</p>
+			<h2>Deactivate virtual environment</h2>
+			<div class="highlight">
+				<code class="prettyprint">
+					<div>$ deactivate</div>
+				</code>
+			</div>
+			<p>
+				enjoy.
+			</p>
+        </div>
+    </body>
+</html>

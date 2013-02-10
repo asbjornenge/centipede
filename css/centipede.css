@@ -1,0 +1,54 @@
+body {
+	font-family: 'Fanwood Text', serif;
+	font-size: 110%;
+	margin: 0px;
+	padding: 0px;
+}
+
+#wrapper {
+	width: 700px;
+	margin: auto;
+	margin-top: 20px;
+}
+
+#wrapper img {
+	float: left;
+	margin-left: 50px;
+	margin-top: 0px;
+}
+
+#flattr {
+	float:right;
+	margin-right: 10px;
+	margin-top: -8px;
+}
+
+.title {
+	margin-top: 105px;
+	margin-bottom: 205px;
+}
+
+.title h1 {
+	font-size: 64px;
+	font-style: italic;
+	margin: 0px;
+	padding: 0px;
+}
+
+.title h3 {
+	font-family: 'Reenie Beanie', serif;
+	font-size: 35px;
+	margin: 0px;
+	padding: 0px;
+}
+
+.highlight {
+	background-color: #E9F5FC;
+	border: 1px solid #A4D4EC;
+	padding: 10px;
+}
+
+.prettyprint {
+	font-family: 'Consolas', 'Menlo', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
+	font-size: 85%;
+}

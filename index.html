@@ -21,6 +21,122 @@
 				<h3 style="margin-top: -17px">Tapdancing</h3>
 				<h3>wsgi feet</h3>
 			</div>
+			<div class="content">
+				<h1>Centipede 0.2.5</h1>
+
+<p><img src="https://raw.github.com/asbjornenge/centipede/master/img/Centiped_logo_300.png"/></p>
+
+<p>Centipede is a WSGI microframework with a decorator based router. It&#39;s strength is that it models the technology in use and tries not to confuse developers with complex patterns and tricks. It inherits strongly from <a href="http://pypi.python.org/pypi/urlrelay/">urlrelay</a>.</p>
+
+<h2>Installation</h2>
+
+<pre><code>$ pip install centipede
+</code></pre>
+
+<h2>Defining handlers</h2>
+
+<p>With Centipede you expose functions to urls. Functions either return a <strong>string</strong> or a <strong>tuple</strong>. A string is treated as the document body, http status is set to <em>200 OK</em> and returned to the browser. Should you return a tuple, <em>status code</em>, <em>body</em> and <em>headers</em> are expected. The expose decorator also supports a few arguments.</p>
+
+<pre><code>from centipede import expose, app
+
+@expose(&#39;^/$&#39;)
+def index(request):
+    &quot;&quot;&quot; Simple Hello
+    &quot;&quot;&quot;
+    return &#39;Hello IgglePigglePartyPants!&#39;
+
+@expose(&#39;^/google$&#39;)
+def index(request):
+    &quot;&quot;&quot; A redirect
+    &quot;&quot;&quot;
+    return (307, &#39;&#39;, {&#39;Location&#39;:&#39;http://google.com&#39;})
+
+import json
+
+@expose(&#39;^/twitter&#39;,&#39;POST&#39;,content_type=&#39;application/json&#39;)
+def tweet_post(request):
+    &quot;&quot;&quot; Tweet
+    &quot;&quot;&quot;
+    data  = request[&#39;data&#39;]
+    text  = data[&#39;text&#39;]
+    user  = data[&#39;user&#39;]
+    tweet = magic.tweet(text, user)
+    return json.dumps(tweet)
+
+@expose(&#39;^/twitter/(?P&lt;tweet&gt;\w+)$&#39;,&#39;GET&#39;,content_type=&#39;application/json&#39;)
+def twitter(request):
+    &quot;&quot;&quot; Get a tweet
+    &quot;&quot;&quot;
+    id    = req[&#39;wsgiorg.routing_args&#39;][1][&#39;tweet&#39;]
+    meta  = request[&#39;params&#39;][&#39;metadata&#39;]
+    tweet = magic.get_tweet(id, meta=meta)
+    return json.dumps(tweet)
+
+application = app()
+</code></pre>
+
+<h2>Expose arguments</h2>
+
+<p>The expose decorator looks like this::</p>
+
+<pre><code>expose(url_pattern, method=&#39;GET&#39;, content_type=&#39;text/html&#39;, charset=&#39;UTF-8&#39;)
+</code></pre>
+
+<h2>Request</h2>
+
+<p>The parameter passed to the functions exposed (<em>request</em> in the examples above) is the WSGI <a href="http://www.python.org/dev/peps/pep-0333/#environ-variables">environ</a> dictionary. For convenience the <strong>query string parameters</strong> and <strong>form data</strong> parameters are packed into environ&#39;s <strong>params</strong> and <strong>data</strong> keys.</p>
+
+<h3>Query string data</h3>
+
+<p>For convenience, query string parameters are available as a dictionary in environ&#39;s <strong>params</strong> key. Both key and value are unquoted using <em>urllib.unquote</em>. Unquoted parameters are passed to the <strong>params_raw</strong> key.</p>
+
+<h3>Form data</h3>
+
+<p>For convenience, form data are available as a dictionary in environ&#39;s <strong>data</strong> key. Both key and value are unquoted using <em>urllib.unquote_plus</em>. Unquoted parameters are passed to the <strong>data_raw</strong> key.</p>
+
+<h2>Templates</h2>
+
+<p>I would recommend keeping your html templates static on the client side and use a javascript template library. But if you really need some server side templating, have a look at mako.</p>
+
+<h2>Static files</h2>
+
+<p>For production you should always host your static files directly from the webserver or a varnish cache or something. But for development purposes you can have centipede serve your static files by passing <em>app</em> a parameter::</p>
+
+<pre><code>app(&#39;path/to/static&#39;)
+</code></pre>
+
+<h2>Deployment</h2>
+
+<p>For deployment it is a good idea to run your centipede application behind a good WSGI server. There is a <a href="http://www.wsgi.org/en/latest/servers.html">bunch</a>. <a href="http://gunicorn.org/">Gunicorn</a> is good. I usually end up running <a href="http://projects.unbit.it/uwsgi/">uwsgi</a> behind nginx.</p>
+
+<h2>Changelog</h2>
+
+<h3>0.2.5</h3>
+
+<ul>
+<li>Separated query string params and form data</li>
+<li>Form data in <em>data</em> key</li>
+<li>Query string params in <em>params</em> key</li>
+<li>Improved error handling for unpacking params (needs more work)</li>
+</ul>
+
+<h3>0.2.4</h3>
+
+<ul>
+<li>Added urllib.unquote_plus for POST parameters.</li>
+<li>Added <em>params_raw</em> key to environ in case urllib.unquote mess up your parameters.</li>
+</ul>
+
+<h3>0.2.3</h3>
+
+<ul>
+<li>Added <em>params</em> key to environ for easy parameter access.</li>
+<li>Added urllib.unquote for params</li>
+</ul>
+
+<p>enjoy.</p>
+
+			</div>
         </div>
     </body>
 </html>

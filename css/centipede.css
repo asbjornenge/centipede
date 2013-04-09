@@ -17,12 +17,6 @@ body {
 	margin-top: 0px;
 }
 
-#flattr {
-	float:right;
-	margin-right: 10px;
-	margin-top: -8px;
-}
-
 .title {
 	margin-top: 105px;
 	margin-bottom: 205px;
@@ -42,7 +36,7 @@ body {
 	padding: 0px;
 }
 
-.highlight {
+pre {
 	background-color: #E9F5FC;
 	border: 1px solid #A4D4EC;
 	padding: 10px;

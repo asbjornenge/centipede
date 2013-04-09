@@ -1,7 +1,5 @@
 # Centipede 0.2.5
 
-<img src="https://raw.github.com/asbjornenge/centipede/master/img/Centiped_logo_300.png"/>
-
 Centipede is a WSGI microframework with a decorator based router. It's strength is that it models the technology in use and tries not to confuse developers with complex patterns and tricks. It inherits strongly from [urlrelay][_urlrelay].
 
 ## Installation

@@ -3,5 +3,5 @@
 import os, subprocess, time
 
 server = subprocess.Popen(['gunicorn','-c','gunicorn.conf','testapp'])
-subprocess.call(['nosetests', '--rednose' ,'tests/spec.py'])
+subprocess.call(['nosetests', '--rednose' ,'tests/spec.py','-s'])
 server.terminate()

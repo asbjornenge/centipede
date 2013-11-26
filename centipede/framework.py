@@ -59,7 +59,7 @@ def expose(url_pattern, method='GET', content_type='text/html', charset='UTF-8')
         def wrapped(env, start_response):
             status  = 200
             headers = [('Content-type', '%s; charset=%s' % (content_type, charset))]
-            params(env, method)
+            # params(env, method)
             resp    = func(env)
 
             if type(resp) == int:
@@ -87,7 +87,13 @@ def expose(url_pattern, method='GET', content_type='text/html', charset='UTF-8')
 ## Decorators
 #
 
-# def params():
+def params(name='params'):
+    def func_wrapper(func):
+        def request_wrapper(req):
+            req[name] = {}
+            return func(req)
+        return request_wrapper
+    return func_wrapper
 
 ## Grab the params
 #
@@ -107,7 +113,7 @@ param_keys = {
     }
 }
 
-def params(env, method):
+def params_old(env, method):
     """ Parse the parameters
     """
     for param in param_keys.values():

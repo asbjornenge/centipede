@@ -84,6 +84,11 @@ def expose(url_pattern, method='GET', content_type='text/html', charset='UTF-8')
             return [resp]
     return entangle
 
+## Decorators
+#
+
+# def params():
+
 ## Grab the params
 #
 

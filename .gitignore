@@ -1,7 +1,8 @@
 bin
 lib
 include
+man
 .Python
-.pyc
+*.pyc
 MANIFEST
 dist

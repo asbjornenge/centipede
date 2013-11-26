@@ -1,5 +1,8 @@
 import requests
 
+host = 'http://127.0.0.1:8000'
+
 def test_expose():
-	print "test"
-	assert True != False
+	r = requests.get('%s' % host)
+	assert r.status_code == 200
+	assert r.text == "HELO"

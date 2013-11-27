@@ -84,62 +84,48 @@ def expose(url_pattern, method='GET', content_type='text/html', charset='UTF-8')
             return [resp]
     return entangle
 
+## Helpers
+#
+
+def reflect(req):
+    return req
+
+def parse_params(data, unquote_method=reflect):
+    d = {}
+    if len(data) == 0:
+        return d
+    for keyval in data.split('&'):
+        k,v = keyval.split('=')
+        d[unquote_method(k)] = unquote_method(v)
+    return d
+
 ## Decorators
 #
 
-def params(name='params'):
+def map(wsgi_key, centipede_key, wrap_request=reflect, parse_params=reflect):
     def func_wrapper(func):
         def request_wrapper(req):
-            req[name] = {}
-            return func(req)
+            req[centipede_key] = parse_params(req[wsgi_key])
+            return func(wrap_request(req))
         return request_wrapper
     return func_wrapper
 
-## Grab the params
-#
+def query_string(key='query', wrapper=reflect, unquote_method=unquote, param_parser=None):
+    if unquote_method == None:
+        unquote_method = reflect
+    def parse(data):
+        return parse_params(data, unquote_method=unquote_method)
+    param_parser = param_parser != None and param_parser or parse
+    return map('QUERY_STRING', key, wrap_request=wrapper, parse_params=param_parser)
 
-param_keys = {
-    'query_string' : {
-        'wsgi_env_key'   : 'QUERY_STRING',
-        'need_read'      : False,
-        'centipede_key'  : 'params',
-        'unquote_method' : unquote
-    },
-    'form_data' : {
-        'wsgi_env_key'   : 'wsgi.input',
-        'need_read'      : True,
-        'centipede_key'  : 'data',
-        'unquote_method' : unquote_plus
-    }
-}
-
-def params_old(env, method):
-    """ Parse the parameters
-    """
-    for param in param_keys.values():
-        env[param['centipede_key']] = {}
-        env['%s_noquote' % param['centipede_key']] = {}
-        env['%s_raw' % param['centipede_key']] = ''
-        try:
-            data = env[param['wsgi_env_key']]
-            if param['need_read']:
-                data = data.read()
-            if data != None and data != '':
-                env['%s_raw' % param['centipede_key']] = data
-                if len(data) > 100000:
-                    env[param['centipede_key']] = 'Big chunk of data received. Only raw data available.'
-                    env['%s_noquote' % param['centipede_key']] = 'Big chunk of data received. Only raw data available.'
-                elif data.find('&') >= 0:
-                    for keyval in data.split('&'):
-                        k,v = keyval.split('=')
-                        uq  = param['unquote_method']
-                        env[param['centipede_key']][uq(k)] = uq(v)
-                        env['%s_noquote' % param['centipede_key']][k] = v
-        except Exception, e:
-#            traceback.print_stack()
-            print "Unable to parse %s data." % param['wsgi_env_key']
-            print e
-
+def body_data(key='data', wrapper=reflect, unquote_method=unquote_plus, param_parser=None, max_size=100000):
+    if unquote_method == None:
+        unquote_method = reflect
+    # TODO : Return error if data > max_size
+    def parse(data):
+        return parse_params(data.read(), unquote_method=unquote_method)
+    param_parser = param_parser != None and param_parser or parse
+    return map('wsgi.input', key, wrap_request=wrapper, parse_params=param_parser)
 
 
 ## Make the application

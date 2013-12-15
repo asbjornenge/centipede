@@ -26,7 +26,8 @@ from webob import Request, Response
 from urlrelay import url, URLRelay
 from static import Cling
 
-import traceback, urllib
+import sys, urllib
+#traceback
 
 status_map = {
     200: "200 OK",
@@ -58,7 +59,6 @@ def expose(url_pattern, method='GET', content_type='text/html', charset='UTF-8')
         def wrapped(env, start_response):
             status  = 200
             headers = [('Content-type', '%s; charset=%s' % (content_type, charset))]
-            # params(env, method)
             resp    = func(env)
 
             if type(resp) == int:
@@ -92,8 +92,9 @@ def reflect(req):
 def dict_params(data):
     d = {}
     for keyval in data.split('&'):
-        k,v  = keyval.split('=')
-        d[k] = v
+        if len(keyval) > 0 and keyval.find('=') > 0:
+            k,v  = keyval.split('=')
+            d[k] = v
     return d
 
 ## Decorators
@@ -118,18 +119,15 @@ def query_string(key='query', unquote=True):
 def body_data(key='body', unquote=True, max_size=100000):
     def func_wrapper(func):
         def request_wrapper(req):
+            content_length = req.has_key('CONTENT_LENGTH') and req['CONTENT_LENGTH'] or 0
+            # TODO: if content_length == 0 and len(wsgi.input) > 0
+            #           # protect agains this ?
+            if int(content_length) > int(max_size):
+                return (400, "I refuse to swallow such big chunks of data.")
             req[key] = dict_params(urllib.unquote_plus(req['wsgi.input'].read()))
             return func(req)
         return request_wrapper
     return func_wrapper
-
-
-    # TODO : Return error if data > max_size
-    # def _parse(data):
-    #     return parse_params(data.read(), unquote_method=unquote_method)
-    # param_parser = param_parser != None and param_parser or _parse
-    # return map('wsgi.input', key, parse_params=param_parser)
-
 
 ## Make the application
 #

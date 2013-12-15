@@ -89,13 +89,11 @@ def expose(url_pattern, method='GET', content_type='text/html', charset='UTF-8')
 def reflect(req):
     return req
 
-def parse_params(data, unquote_method=reflect):
+def dict_params(data):
     d = {}
-    if len(data) == 0:
-        return d
     for keyval in data.split('&'):
-        k,v = keyval.split('=')
-        d[unquote_method(k)] = unquote_method(v)
+        k,v  = keyval.split('=')
+        d[k] = v
     return d
 
 ## Decorators
@@ -112,7 +110,7 @@ def map(wsgi_key, centipede_key, parser=reflect):
 def query_string(key='query', unquote=True):
     def func_wrapper(func):
         def request_wrapper(req):
-            req[key] = urllib.unquote(req['QUERY_STRING'])
+            req[key] = dict_params(urllib.unquote(req['QUERY_STRING']))
             return func(req)
         return request_wrapper
     return func_wrapper
@@ -120,7 +118,7 @@ def query_string(key='query', unquote=True):
 def body_data(key='body', unquote=True, max_size=100000):
     def func_wrapper(func):
         def request_wrapper(req):
-            req[key] = urllib.unquote_plus(req['wsgi.input'].read())
+            req[key] = dict_params(urllib.unquote_plus(req['wsgi.input'].read()))
             return func(req)
         return request_wrapper
     return func_wrapper

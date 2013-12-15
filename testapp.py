@@ -1,6 +1,5 @@
 import json
 from centipede import expose, app, query_string, body_data, map
-from bunch import Bunch
 
 @expose('^/$')
 def _get(req):
@@ -20,7 +19,10 @@ def _params(req):
 @query_string()
 @body_data()
 def _bodydata(req):
-	data = Bunch(data=req['data'],query=req['query'])
+	data = {
+		'body'  : req['body'],
+		'query' : req['query']
+	}
 	return json.dumps(data)
 
 application = app()

@@ -25,9 +25,8 @@
 from webob import Request, Response
 from urlrelay import url, URLRelay
 from static import Cling
-from urllib import unquote, unquote_plus
 
-import traceback
+import traceback, urllib
 
 status_map = {
     200: "200 OK",
@@ -102,30 +101,36 @@ def parse_params(data, unquote_method=reflect):
 ## Decorators
 #
 
-def map(wsgi_key, centipede_key, wrap_request=reflect, parse_params=reflect):
+def map(wsgi_key, centipede_key, parser=reflect):
     def func_wrapper(func):
         def request_wrapper(req):
-            req[centipede_key] = parse_params(req[wsgi_key])
-            return func(wrap_request(req))
+            req[centipede_key] = parser(req[wsgi_key])
+            return func(req)
         return request_wrapper
     return func_wrapper
 
-def query_string(key='query', wrapper=reflect, unquote_method=unquote, param_parser=None):
-    if unquote_method == None:
-        unquote_method = reflect
-    def parse(data):
-        return parse_params(data, unquote_method=unquote_method)
-    param_parser = param_parser != None and param_parser or parse
-    return map('QUERY_STRING', key, wrap_request=wrapper, parse_params=param_parser)
+def query_string(key='query', unquote=True):
+    def func_wrapper(func):
+        def request_wrapper(req):
+            req[key] = urllib.unquote(req['QUERY_STRING'])
+            return func(req)
+        return request_wrapper
+    return func_wrapper
 
-def body_data(key='data', wrapper=reflect, unquote_method=unquote_plus, param_parser=None, max_size=100000):
-    if unquote_method == None:
-        unquote_method = reflect
+def body_data(key='body', unquote=True, max_size=100000):
+    def func_wrapper(func):
+        def request_wrapper(req):
+            req[key] = urllib.unquote_plus(req['wsgi.input'].read())
+            return func(req)
+        return request_wrapper
+    return func_wrapper
+
+
     # TODO : Return error if data > max_size
-    def parse(data):
-        return parse_params(data.read(), unquote_method=unquote_method)
-    param_parser = param_parser != None and param_parser or parse
-    return map('wsgi.input', key, wrap_request=wrapper, parse_params=param_parser)
+    # def _parse(data):
+    #     return parse_params(data.read(), unquote_method=unquote_method)
+    # param_parser = param_parser != None and param_parser or _parse
+    # return map('wsgi.input', key, parse_params=param_parser)
 
 
 ## Make the application

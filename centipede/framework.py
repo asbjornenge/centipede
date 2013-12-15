@@ -25,9 +25,8 @@
 from webob import Request, Response
 from urlrelay import url, URLRelay
 from static import Cling
-from urllib import unquote, unquote_plus
 
-import traceback
+import traceback, urllib
 
 status_map = {
     200: "200 OK",
@@ -59,7 +58,7 @@ def expose(url_pattern, method='GET', content_type='text/html', charset='UTF-8')
         def wrapped(env, start_response):
             status  = 200
             headers = [('Content-type', '%s; charset=%s' % (content_type, charset))]
-            params(env, method)
+            # params(env, method)
             resp    = func(env)
 
             if type(resp) == int:
@@ -84,51 +83,52 @@ def expose(url_pattern, method='GET', content_type='text/html', charset='UTF-8')
             return [resp]
     return entangle
 
-## Grab the params
+## Helpers
 #
 
-param_keys = {
-    'query_string' : {
-        'wsgi_env_key'   : 'QUERY_STRING',
-        'need_read'      : False,
-        'centipede_key'  : 'params',
-        'unquote_method' : unquote
-    },
-    'form_data' : {
-        'wsgi_env_key'   : 'wsgi.input',
-        'need_read'      : True,
-        'centipede_key'  : 'data',
-        'unquote_method' : unquote_plus
-    }
-}
+def reflect(req):
+    return req
 
-def params(env, method):
-    """ Parse the parameters
-    """
-    for param in param_keys.values():
-        env[param['centipede_key']] = {}
-        env['%s_noquote' % param['centipede_key']] = {}
-        env['%s_raw' % param['centipede_key']] = ''
-        try:
-            data = env[param['wsgi_env_key']]
-            if param['need_read']:
-                data = data.read()
-            if data != None and data != '':
-                env['%s_raw' % param['centipede_key']] = data
-                if len(data) > 100000:
-                    env[param['centipede_key']] = 'Big chunk of data received. Only raw data available.'
-                    env['%s_noquote' % param['centipede_key']] = 'Big chunk of data received. Only raw data available.'
-                elif data.find('&') >= 0:
-                    for keyval in data.split('&'):
-                        k,v = keyval.split('=')
-                        uq  = param['unquote_method']
-                        env[param['centipede_key']][uq(k)] = uq(v)
-                        env['%s_noquote' % param['centipede_key']][k] = v
-        except Exception, e:
-#            traceback.print_stack()
-            print "Unable to parse %s data." % param['wsgi_env_key']
-            print e
+def dict_params(data):
+    d = {}
+    for keyval in data.split('&'):
+        k,v  = keyval.split('=')
+        d[k] = v
+    return d
 
+## Decorators
+#
+
+def map(wsgi_key, centipede_key, parser=reflect):
+    def func_wrapper(func):
+        def request_wrapper(req):
+            req[centipede_key] = parser(req[wsgi_key])
+            return func(req)
+        return request_wrapper
+    return func_wrapper
+
+def query_string(key='query', unquote=True):
+    def func_wrapper(func):
+        def request_wrapper(req):
+            req[key] = dict_params(urllib.unquote(req['QUERY_STRING']))
+            return func(req)
+        return request_wrapper
+    return func_wrapper
+
+def body_data(key='body', unquote=True, max_size=100000):
+    def func_wrapper(func):
+        def request_wrapper(req):
+            req[key] = dict_params(urllib.unquote_plus(req['wsgi.input'].read()))
+            return func(req)
+        return request_wrapper
+    return func_wrapper
+
+
+    # TODO : Return error if data > max_size
+    # def _parse(data):
+    #     return parse_params(data.read(), unquote_method=unquote_method)
+    # param_parser = param_parser != None and param_parser or _parse
+    # return map('wsgi.input', key, parse_params=param_parser)
 
 
 ## Make the application

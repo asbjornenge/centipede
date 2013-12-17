@@ -109,3 +109,7 @@ enjoy.
 [_Gunicorn]: http://gunicorn.org/
 [_uwsgi]: http://projects.unbit.it/uwsgi/
 [_bunch]: http://www.wsgi.org/en/latest/servers.html
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/asbjornenge/centipede/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
